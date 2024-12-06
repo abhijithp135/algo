@@ -1,33 +1,27 @@
 namespace seg_tree {
 
 // Floor of log_2(a); index of highest 1-bit
-inline int floor_log_2(int a) {
-  return a ? bit_width(unsigned(a)) - 1 : -1;
-}
+inline int floor_log_2(int a) { return a ? bit_width(unsigned(a)) - 1 : -1; }
 
 struct point {
   int a;
   point() : a(0) {}
   explicit point(int a_) : a(a_) { assert(a >= -1); }
 
-  explicit operator bool () { return bool(a); }
+  explicit operator bool() { return bool(a); }
 
   // This is useful so you can directly do array indices
   /* implicit */ operator int() const { return a; }
 
-  point c(bool z) const {
-    return point((a << 1) | z);
-  }
+  point c(bool z) const { return point((a << 1) | z); }
 
-  point operator [] (bool z) const {
-    return c(z);
-  }
+  point operator[](bool z) const { return c(z); }
 
-  point p() const {
-    return point(a >> 1);
-  }
+  point p() const { return point(a >> 1); }
 
-  friend std::ostream& operator << (std::ostream& o, const point& p) { return o << int(p); }
+  friend std::ostream &operator<<(std::ostream &o, const point &p) {
+    return o << int(p);
+  }
 
   template <typename F> void for_each(F f) const {
     for (int v = a; v > 0; v >>= 1) {
@@ -48,10 +42,16 @@ struct point {
     }
   }
 
-  point& operator ++ () { ++a; return *this; }
-  point operator ++ (int) { return point(a++); }
-  point& operator -- () { --a; return *this; }
-  point operator -- (int) { return point(a--); }
+  point &operator++() {
+    ++a;
+    return *this;
+  }
+  point operator++(int) { return point(a++); }
+  point &operator--() {
+    --a;
+    return *this;
+  }
+  point operator--(int) { return point(a--); }
 };
 
 struct range {
@@ -62,22 +62,22 @@ struct range {
   }
   explicit range(std::array<int, 2> r) : range(r[0], r[1]) {}
 
-  explicit operator std::array<int, 2>() const {
-    return {a, b};
-  }
+  explicit operator std::array<int, 2>() const { return {a, b}; }
 
-  const int& operator[] (bool z) const {
-    return z ? b : a;
-  }
+  const int &operator[](bool z) const { return z ? b : a; }
 
-  friend std::ostream& operator << (std::ostream& o, const range& r) { return o << "[" << r.a << ".." << r.b << ")"; }
+  friend std::ostream &operator<<(std::ostream &o, const range &r) {
+    return o << "[" << r.a << ".." << r.b << ")";
+  }
 
   // Iterate over the range from outside-in.
   //   Calls f(point a)
   template <typename F> void for_each(F f) const {
     for (int x = a, y = b; x < y; x >>= 1, y >>= 1) {
-      if (x & 1) f(point(x++));
-      if (y & 1) f(point(--y));
+      if (x & 1)
+        f(point(x++));
+      if (y & 1)
+        f(point(--y));
     }
   }
 
@@ -85,8 +85,10 @@ struct range {
   //   Calls f(point a, bool is_right)
   template <typename F> void for_each_with_side(F f) const {
     for (int x = a, y = b; x < y; x >>= 1, y >>= 1) {
-      if (x & 1) f(point(x++), false);
-      if (y & 1) f(point(--y), true);
+      if (x & 1)
+        f(point(x++), false);
+      if (y & 1)
+        f(point(--y), true);
     }
   }
 
@@ -99,7 +101,7 @@ struct range {
       int i = countr_zero(unsigned(v));
       f(point(((a - 1) >> i) + 1));
     }
-    for (int v = b & anc_msk; v; ) {
+    for (int v = b & anc_msk; v;) {
       int i = floor_log_2(v);
       f(point((b >> i) - 1));
       v ^= (1 << i);
@@ -115,7 +117,7 @@ struct range {
       int i = countr_zero(unsigned(v));
       f(point((b >> i) - 1));
     }
-    for (int v = (-a) & anc_msk; v; ) {
+    for (int v = (-a) & anc_msk; v;) {
       int i = floor_log_2(v);
       f(point(((a - 1) >> i) + 1));
       v ^= (1 << i);
@@ -124,7 +126,9 @@ struct range {
 
   template <typename F> void for_parents_down(F f) const {
     int x = a, y = b;
-    if ((x ^ y) > x) { x <<= 1, std::swap(x, y); }
+    if ((x ^ y) > x) {
+      x <<= 1, std::swap(x, y);
+    }
     int dx = countr_zero(unsigned(x));
     int dy = countr_zero(unsigned(y));
     int anc_depth = floor_log_2((x - 1) ^ y);
@@ -138,7 +142,9 @@ struct range {
 
   template <typename F> void for_parents_up(F f) const {
     int x = a, y = b;
-    if ((x ^ y) > x) { x <<= 1, std::swap(x, y); }
+    if ((x ^ y) > x) {
+      x <<= 1, std::swap(x, y);
+    }
     int dx = countr_zero(unsigned(x));
     int dy = countr_zero(unsigned(y));
     int anc_depth = floor_log_2((x - 1) ^ y);
@@ -168,14 +174,14 @@ struct in_order_layout {
 
   range get_range(int a, int b) const {
     assert(0 <= a && a <= b && b <= n);
-    if (n == 0) return range();
+    if (n == 0)
+      return range();
     a += s, b += s;
-    return range((a >= 2 * n ? 2 * (a - n) : a), (b >= 2 * n ? 2 * (b - n) : b));
+    return range((a >= 2 * n ? 2 * (a - n) : a),
+                 (b >= 2 * n ? 2 * (b - n) : b));
   }
 
-  range get_range(std::array<int, 2> p) const {
-    return get_range(p[0], p[1]);
-  }
+  range get_range(std::array<int, 2> p) const { return get_range(p[0], p[1]); }
 
   int get_leaf_index(point pt) const {
     int a = int(pt);
@@ -189,7 +195,8 @@ struct in_order_layout {
     int l = countl_zero(unsigned(a)) - countl_zero(unsigned(2 * n - 1));
     int x = a << l, y = (a + 1) << l;
     assert(s <= x && x < y && y <= 2 * s);
-    return {(x >= 2 * n ? (x >> 1) + n : x) - s, (y >= 2 * n ? (y >> 1) + n : y) - s};
+    return {(x >= 2 * n ? (x >> 1) + n : x) - s,
+            (y >= 2 * n ? (y >> 1) + n : y) - s};
   }
 
   int get_node_split(point pt) const {
@@ -223,13 +230,12 @@ struct circular_layout {
 
   range get_range(int a, int b) const {
     assert(0 <= a && a <= b && b <= n);
-    if (n == 0) return range();
+    if (n == 0)
+      return range();
     return range(n + a, n + b);
   }
 
-  range get_range(std::array<int, 2> p) const {
-    return get_range(p[0], p[1]);
-  }
+  range get_range(std::array<int, 2> p) const { return get_range(p[0], p[1]); }
 
   int get_leaf_index(point pt) const {
     int a = int(pt);

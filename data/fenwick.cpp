@@ -1,6 +1,5 @@
-template <typename T>
-class FenwickTree {
- public:
+template <typename T> class FenwickTree {
+public:
   vector<T> fenw;
   int n;
   int pw;
@@ -37,6 +36,7 @@ class FenwickTree {
       if (at + len <= n) {
         auto nv = v;
         nv += fenw[at + len - 1];
+        // If sum < c, then replace < with <=
         if (!(c < nv)) {
           v = nv;
           at += len;

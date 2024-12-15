@@ -29,6 +29,8 @@ public:
   }
 
   // Returns the length of the longest prefix with sum <= c
+  // want first index with at least c? call this with c-1
+  // The output can be directly used in the original array 0 indexed array
   int MaxPrefix(T c) {
     T v{};
     int at = 0;
